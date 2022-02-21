@@ -6,7 +6,7 @@ import (
 
 func NewAnalyzer() *analysis.Analyzer {
 	return &analysis.Analyzer{
-		Name: "missing-len",
+		Name: "missinglen",
 		Doc:  "finds slice or map without init len",
 		Run:  RunAnalyzer,
 	}

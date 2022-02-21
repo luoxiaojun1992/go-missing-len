@@ -1,0 +1,6 @@
+linters-settings:
+  custom:
+    missinglen:
+      path: ./build/missing_len.so
+      description: The description of the linter
+      original-url: https://github.com/luoxiaojun1992/go-missing-len
