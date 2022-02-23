@@ -1,6 +1,7 @@
 .PHONY: plugin
 plugin:
-	CGO_ENABLED=1 go build -buildmode=plugin -o ./build/missing_len.so ./plugin/missing_len.go
+	CGO_ENABLED=1 go build -buildmode=plugin -o ./build/`uname -s`_`uname -m`/missing_len.so ./plugin/missing_len.go
+	cp ./build/`uname -s`_`uname -m`/missing_len.so ./build/missing_len.so
 
 .PHONY: demo
 demo: plugin
