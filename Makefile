@@ -10,3 +10,7 @@ demo: plugin
 .PHONY: lint
 lint: plugin
 	./build/`uname -s`_`uname -m`/golangci-lint run -Emissinglen ./pkg
+
+.PHONY: build
+build:
+	go build -a -o ./build/`uname -s`_`uname -m`/linter ./cmd/main.go

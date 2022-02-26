@@ -57,6 +57,13 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 							switch initLen := asRh.Args[1].(type) {
 							case *ast.BasicLit:
 								if initLen.Value == "0" {
+									l.addHint(&Hint{
+										Pos: initLen.Pos(),
+										End: initLen.End(),
+										Category: "missing-len",
+										Message: "Missing init len of slice",
+										Suggestion: "Specific an init len of slice",
+									})
 									switch asVar := n.Lhs[0].(type) {
 									case *ast.Ident:
 										l.emptySliceMaps[asVar.Name] = &sliceMapPos{
