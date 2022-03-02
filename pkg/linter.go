@@ -7,11 +7,17 @@ import (
 )
 
 type MissingLenLinter struct {
-	emptySliceMaps map[string]*sliceMapPos
+	emptySliceMaps map[string]*slicePos
+	emptyMapMaps map[string]*MapPos
 	Hints []*Hint
 }
 
-type sliceMapPos struct {
+type slicePos struct {
+	Pos token.Pos
+	End token.Pos
+}
+
+type MapPos struct {
 	Pos token.Pos
 	End token.Pos
 }
@@ -26,7 +32,7 @@ type Hint struct {
 
 func NewMissingLenLinter() *MissingLenLinter {
 	linter := &MissingLenLinter{}
-	linter.emptySliceMaps = make(map[string]*sliceMapPos)
+	linter.emptySliceMaps = make(map[string]*slicePos)
 	return linter
 }
 
@@ -35,7 +41,7 @@ func (l *MissingLenLinter) addHint(newHint *Hint) {
 }
 
 func (l *MissingLenLinter) Reset() {
-	l.emptySliceMaps = make(map[string]*sliceMapPos)
+	l.emptySliceMaps = make(map[string]*slicePos)
 	l.Hints = nil
 }
 
@@ -66,7 +72,29 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 									})
 									switch asVar := n.Lhs[0].(type) {
 									case *ast.Ident:
-										l.emptySliceMaps[asVar.Name] = &sliceMapPos{
+										l.emptySliceMaps[asVar.Name] = &slicePos{
+											Pos: asVar.Pos(),
+											End: asVar.End(),
+										}
+									}
+								}
+							}
+						}
+					case *ast.MapType:
+						if len(asRh.Args) > 1 {
+							switch initLen := asRh.Args[1].(type) {
+							case *ast.BasicLit:
+								if initLen.Value == "0" {
+									l.addHint(&Hint{
+										Pos:        initLen.Pos(),
+										End:        initLen.End(),
+										Category:   "missing-len",
+										Message:    "Missing init len of map",
+										Suggestion: "Specific an init len of map",
+									})
+									switch asVar := n.Lhs[0].(type) {
+									case *ast.Ident:
+										l.emptySliceMaps[asVar.Name] = &slicePos{
 											Pos: asVar.Pos(),
 											End: asVar.End(),
 										}

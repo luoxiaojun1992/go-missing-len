@@ -6,4 +6,7 @@ func main() {
 	for _, num := range s1 {
 		s = append(s, num)
 	}
+
+	m := make(map[string]string, 0)
+	m["foo"] = "bar"
 }
