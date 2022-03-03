@@ -8,7 +8,7 @@ import (
 
 type MissingLenLinter struct {
 	emptySliceMaps map[string]*slicePos
-	emptyMapMaps map[string]*MapPos
+	emptyMapMaps map[string]*mapPos
 	Hints []*Hint
 }
 
@@ -17,7 +17,7 @@ type slicePos struct {
 	End token.Pos
 }
 
-type MapPos struct {
+type mapPos struct {
 	Pos token.Pos
 	End token.Pos
 }
@@ -33,6 +33,7 @@ type Hint struct {
 func NewMissingLenLinter() *MissingLenLinter {
 	linter := &MissingLenLinter{}
 	linter.emptySliceMaps = make(map[string]*slicePos)
+	linter.emptyMapMaps = make(map[string]*mapPos)
 	return linter
 }
 
@@ -94,7 +95,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 									})
 									switch asVar := n.Lhs[0].(type) {
 									case *ast.Ident:
-										l.emptySliceMaps[asVar.Name] = &slicePos{
+										l.emptyMapMaps[asVar.Name] = &mapPos{
 											Pos: asVar.Pos(),
 											End: asVar.End(),
 										}
@@ -108,23 +109,52 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 		case *ast.RangeStmt:
 			switch rangeVar := n.X.(type) {
 			case *ast.Ident:
-				for _, rangeBodyStmt := range n.Body.List {
-					switch rbs := rangeBodyStmt.(type) {
-					case *ast.AssignStmt:
-						switch rbsRh := rbs.Rhs[0].(type) {
-						case *ast.CallExpr:
-							callF := rbsRh.Fun.(*ast.Ident)
-							if callF.Name == "append" {
-								switch apVar := rbsRh.Args[0].(type) {
+				switch rangeVal := n.Value.(type) {
+				case *ast.Ident:
+					for _, rangeBodyStmt := range n.Body.List {
+						switch rbs := rangeBodyStmt.(type) {
+						case *ast.AssignStmt:
+							switch rbsLh := rbs.Lhs[0].(type) {
+							case *ast.IndexExpr:
+								switch setVar := rbsLh.X.(type) {
 								case *ast.Ident:
-									if emptySliceMap, ok := l.emptySliceMaps[apVar.Name]; ok {
-										l.addHint(&Hint{
-											Pos: emptySliceMap.Pos,
-											End: emptySliceMap.End,
-											Category: "missing-len",
-											Message: fmt.Sprintf("Missing init len of slice[%s]", apVar.Name),
-											Suggestion: fmt.Sprintf("May use len(%s)", rangeVar.Name),
-										})
+									if emptyMapPos, ok := l.emptyMapMaps[setVar.Name]; ok {
+										switch setVal := rbs.Rhs[0].(type) {
+										case *ast.Ident:
+											if setVal.Name == rangeVal.Name {
+												l.addHint(&Hint{
+													Pos: emptyMapPos.Pos,
+													End: emptyMapPos.End,
+													Category: "missing-len",
+													Message: fmt.Sprintf("Missing init len of map[%s]", setVar.Name),
+													Suggestion: fmt.Sprintf("May use len(%s)", rangeVar.Name),
+												})
+											}
+										}
+									}
+								}
+							}
+							
+							switch rbsRh := rbs.Rhs[0].(type) {
+							case *ast.CallExpr:
+								callF := rbsRh.Fun.(*ast.Ident)
+								if callF.Name == "append" {
+									switch apVar := rbsRh.Args[0].(type) {
+									case *ast.Ident:
+										if emptySlicePos, ok := l.emptySliceMaps[apVar.Name]; ok {
+											switch apVal := rbsRh.Args[1].(type) {
+											case *ast.Ident:
+												if apVal.Name == rangeVal.Name {
+													l.addHint(&Hint{
+														Pos: emptySlicePos.Pos,
+														End: emptySlicePos.End,
+														Category: "missing-len",
+														Message: fmt.Sprintf("Missing init len of slice[%s]", apVar.Name),
+														Suggestion: fmt.Sprintf("May use len(%s)", rangeVar.Name),
+													})
+												}
+											}
+										}
 									}
 								}
 							}

@@ -7,6 +7,9 @@ func main() {
 		s = append(s, num)
 	}
 
+	s2 := []string{"foo", "bar"}
 	m := make(map[string]string, 0)
-	m["foo"] = "bar"
+	for _, str := range s2 {
+		m[str] = str
+	}
 }
