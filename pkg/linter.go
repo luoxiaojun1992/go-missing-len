@@ -43,6 +43,7 @@ func (l *MissingLenLinter) addHint(newHint *Hint) {
 
 func (l *MissingLenLinter) Reset() {
 	l.emptySliceMaps = make(map[string]*slicePos)
+	l.emptyMapMaps = make(map[string]*mapPos)
 	l.Hints = nil
 }
 
