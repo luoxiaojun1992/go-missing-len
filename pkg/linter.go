@@ -59,7 +59,10 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 		case *ast.AssignStmt:
 			switch asRh := n.Rhs[0].(type) {
 			case *ast.CallExpr:
-				callF := asRh.Fun.(*ast.Ident)
+				callF, ok := asRh.Fun.(*ast.Ident)
+				if !ok {
+					break
+				}
 				if callF.Name == "make" {
 					switch makeT := asRh.Args[0].(type) {
 					case *ast.ArrayType:
