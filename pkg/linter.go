@@ -15,11 +15,13 @@ type MissingLenLinter struct {
 type slicePos struct {
 	Pos token.Pos
 	End token.Pos
+	InitLenNode *ast.BasicLit
 }
 
 type mapPos struct {
 	Pos token.Pos
 	End token.Pos
+	InitLenNode *ast.BasicLit
 }
 
 type Hint struct {
@@ -77,6 +79,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 										l.emptySliceMaps[asVar.Name] = &slicePos{
 											Pos: asVar.Pos(),
 											End: asVar.End(),
+											InitLenNode: initLen,
 										}
 									}
 								}
@@ -99,6 +102,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 										l.emptyMapMaps[asVar.Name] = &mapPos{
 											Pos: asVar.Pos(),
 											End: asVar.End(),
+											InitLenNode: initLen,
 										}
 									}
 								}
@@ -123,6 +127,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 										switch setVal := rbs.Rhs[0].(type) {
 										case *ast.Ident:
 											if setVal.Name == rangeVal.Name {
+												emptyMapPos.InitLenNode.Value = fmt.Sprintf("len(%s)", rangeVar.Name)
 												l.addHint(&Hint{
 													Pos: emptyMapPos.Pos,
 													End: emptyMapPos.End,
@@ -146,6 +151,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 											switch apVal := rbsRh.Args[1].(type) {
 											case *ast.Ident:
 												if apVal.Name == rangeVal.Name {
+													emptySlicePos.InitLenNode.Value = fmt.Sprintf("len(%s)", rangeVar.Name)
 													l.addHint(&Hint{
 														Pos: emptySlicePos.Pos,
 														End: emptySlicePos.End,
