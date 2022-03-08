@@ -12,12 +12,19 @@ lint: plugin
 	./build/`uname -s`_`uname -m`/golangci-lint run -Emissinglen ./pkg
 
 .PHONY: build
-build:
+build: plugin
 	go build -a -o ./build/`uname -s`_`uname -m`/linter ./cmd/main.go
 
 .PHONY: demo
 demo: build
 	./build/`uname -s`_`uname -m`/linter --file ./testdata/sample.go
 
+.PHONY: tidy
+tidy:
+	go mod tidy
+
+.PHONY: init
+init: tidy
+
 .PHONY: all
-all: lint build
+all: tidy lint build
