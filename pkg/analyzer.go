@@ -18,10 +18,10 @@ func RunAnalyzer(pass *analysis.Pass) (interface{}, error) {
 		linter.Check(file)
 		for _, hint := range linter.Hints {
 			pass.Report(analysis.Diagnostic{
-				Pos:            hint.Pos,
-				End:            hint.End,
-				Category:       hint.Category,
-				Message:        hint.Message,
+				Pos:      hint.Pos,
+				End:      hint.End,
+				Category: hint.Category,
+				Message:  hint.Message,
 				SuggestedFixes: []analysis.SuggestedFix{{
 					Message: hint.Suggestion,
 				}},

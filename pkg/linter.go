@@ -8,27 +8,27 @@ import (
 
 type MissingLenLinter struct {
 	emptySliceMaps map[string]*slicePos
-	emptyMapMaps map[string]*mapPos
-	Hints []*Hint
+	emptyMapMaps   map[string]*mapPos
+	Hints          []*Hint
 }
 
 type slicePos struct {
-	Pos token.Pos
-	End token.Pos
+	Pos         token.Pos
+	End         token.Pos
 	InitLenNode *ast.BasicLit
 }
 
 type mapPos struct {
-	Pos token.Pos
-	End token.Pos
+	Pos         token.Pos
+	End         token.Pos
 	InitLenNode *ast.BasicLit
 }
 
 type Hint struct {
-	Pos token.Pos
-	End token.Pos
-	Category string
-	Message string
+	Pos        token.Pos
+	End        token.Pos
+	Category   string
+	Message    string
 	Suggestion string
 }
 
@@ -49,7 +49,7 @@ func (l *MissingLenLinter) Reset() {
 	l.Hints = nil
 }
 
-func (l *MissingLenLinter) Check(file *ast.File)  {
+func (l *MissingLenLinter) Check(file *ast.File) {
 	ast.Walk(l, file)
 }
 
@@ -71,17 +71,17 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 							case *ast.BasicLit:
 								if initLen.Value == "0" {
 									l.addHint(&Hint{
-										Pos: initLen.Pos(),
-										End: initLen.End(),
-										Category: "missing-len",
-										Message: "Missing init len of slice",
+										Pos:        initLen.Pos(),
+										End:        initLen.End(),
+										Category:   "missing-len",
+										Message:    "Missing init len of slice",
 										Suggestion: "Specific an init len of slice",
 									})
 									switch asVar := n.Lhs[0].(type) {
 									case *ast.Ident:
 										l.emptySliceMaps[asVar.Name] = &slicePos{
-											Pos: asVar.Pos(),
-											End: asVar.End(),
+											Pos:         asVar.Pos(),
+											End:         asVar.End(),
 											InitLenNode: initLen,
 										}
 									}
@@ -103,8 +103,8 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 									switch asVar := n.Lhs[0].(type) {
 									case *ast.Ident:
 										l.emptyMapMaps[asVar.Name] = &mapPos{
-											Pos: asVar.Pos(),
-											End: asVar.End(),
+											Pos:         asVar.Pos(),
+											End:         asVar.End(),
 											InitLenNode: initLen,
 										}
 									}
@@ -132,10 +132,10 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 											if setVal.Name == rangeVal.Name {
 												emptyMapPos.InitLenNode.Value = fmt.Sprintf("len(%s)", rangeVar.Name)
 												l.addHint(&Hint{
-													Pos: emptyMapPos.Pos,
-													End: emptyMapPos.End,
-													Category: "missing-len",
-													Message: fmt.Sprintf("Missing init len of map[%s]", setVar.Name),
+													Pos:        emptyMapPos.Pos,
+													End:        emptyMapPos.End,
+													Category:   "missing-len",
+													Message:    fmt.Sprintf("Missing init len of map[%s]", setVar.Name),
 													Suggestion: fmt.Sprintf("May use len(%s)", rangeVar.Name),
 												})
 											}
@@ -143,7 +143,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 									}
 								}
 							}
-							
+
 							switch rbsRh := rbs.Rhs[0].(type) {
 							case *ast.CallExpr:
 								callF := rbsRh.Fun.(*ast.Ident)
@@ -156,10 +156,10 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 												if apVal.Name == rangeVal.Name {
 													emptySlicePos.InitLenNode.Value = fmt.Sprintf("len(%s)", rangeVar.Name)
 													l.addHint(&Hint{
-														Pos: emptySlicePos.Pos,
-														End: emptySlicePos.End,
-														Category: "missing-len",
-														Message: fmt.Sprintf("Missing init len of slice[%s]", apVar.Name),
+														Pos:        emptySlicePos.Pos,
+														End:        emptySlicePos.End,
+														Category:   "missing-len",
+														Message:    fmt.Sprintf("Missing init len of slice[%s]", apVar.Name),
 														Suggestion: fmt.Sprintf("May use len(%s)", rangeVar.Name),
 													})
 												}

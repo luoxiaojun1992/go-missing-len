@@ -9,7 +9,7 @@ ci-lint-demo: plugin
 
 .PHONY: lint
 lint: plugin
-	./build/`uname -s`_`uname -m`/golangci-lint run -Emissinglen ./pkg
+	./build/`uname -s`_`uname -m`/golangci-lint run -Emissinglen ./pkg ./cmd
 
 .PHONY: build
 build: plugin
@@ -19,12 +19,20 @@ build: plugin
 demo: build
 	./build/`uname -s`_`uname -m`/linter --file ./testdata/sample.go
 
+.PHONY: vet
+vet:
+	go vet ./pkg ./cmd ./plugin
+
 .PHONY: tidy
 tidy:
 	go mod tidy
+
+.PHONY: fmt
+fmt:
+	go fmt ./pkg ./cmd ./plugin
 
 .PHONY: init
 init: tidy
 
 .PHONY: all
-all: tidy lint build
+all: tidy vet fmt lint build
