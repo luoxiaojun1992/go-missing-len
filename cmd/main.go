@@ -13,6 +13,10 @@ import (
 func main() {
 	var filename string
 	flag.StringVar(&filename, "file", "", "")
+
+	var resultFormat string
+	flag.StringVar(&resultFormat, "format", "", "")
+
 	flag.Parse()
 
 	file, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0)
@@ -24,11 +28,7 @@ func main() {
 
 	fmt.Println("Result:")
 	fmt.Println()
-	if len(linter.Hints) > 0 {
-		for _, hint := range linter.Hints {
-			fmt.Printf("Pos: %d, End: %d, Category: %s, Message: %s, Suggestion: %s \n", hint.Pos, hint.End, hint.Category, hint.Message, hint.Suggestion)
-		}
-	}
+	pkg.SerializeHints(linter.Hints, resultFormat)
 	fmt.Println()
 
 	fmt.Println("Suggested code:")
