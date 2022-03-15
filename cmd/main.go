@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/luoxiaojun1992/go-missing-len/pkg"
+	"go/ast"
 	"go/format"
 	"go/parser"
 	"go/token"
@@ -17,12 +18,26 @@ func main() {
 	var resultFormat string
 	flag.StringVar(&resultFormat, "format", "", "")
 
+	var showAst bool
+	flag.BoolVar(&showAst, "ast", false, "")
+
 	flag.Parse()
 
-	file, err := parser.ParseFile(token.NewFileSet(), filename, nil, 0)
+	fileSet := token.NewFileSet()
+	file, err := parser.ParseFile(fileSet, filename, nil, 0)
 	if err != nil {
 		panic(err)
 	}
+
+	if showAst {
+		fmt.Println("Ast:")
+		fmt.Println()
+		if err := ast.Print(fileSet, file); err != nil {
+			panic(err)
+		}
+		fmt.Println()
+	}
+
 	linter := pkg.NewMissingLenLinter()
 	linter.Check(file)
 
