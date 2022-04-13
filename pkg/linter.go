@@ -160,7 +160,7 @@ func (l *MissingLenLinter) Visit(node ast.Node) ast.Visitor {
 														End:        emptySlicePos.End,
 														Category:   "missing-len",
 														Message:    fmt.Sprintf("Missing init len of slice[%s]", apVar.Name),
-														Suggestion: fmt.Sprintf("May use len(%s)", rangeVar.Name),
+														Suggestion: fmt.Sprintf("May use len(%s), replace append with assign by index", rangeVar.Name),
 													})
 												}
 											}
